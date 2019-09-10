@@ -22,9 +22,15 @@ find_package(catkin REQUIRED COMPONENTS
              genmsg stereo_msgs move_base_msgs image_geometry 
 )
 
+option(ENABLE_RTABMAP_OCTOMAP "Use Octomap within RTabMap" OFF)
+
 # Optional components
 find_package(costmap_2d)
-find_package(octomap_msgs)
+## Optional building with octomap
+if(ENABLE_RTABMAP_OCTOMAP)
+  message(WARNING "Building RTabMap with Octomap")
+  find_package(octomap_msgs)
+endif(ENABLE_RTABMAP_OCTOMAP)
 find_package(apriltag_ros)
 find_package(rviz)
 find_package(find_object_2d)
@@ -131,9 +137,12 @@ SET(optional_dependencies "")
 IF(costmap_2d_FOUND)		
    SET(optional_dependencies ${optional_dependencies} costmap_2d)		
 ENDIF(costmap_2d_FOUND)		
-IF(octomap_msgs_FOUND)		
-   SET(optional_dependencies ${optional_dependencies} octomap_msgs)		
-ENDIF(octomap_msgs_FOUND)			
+## Optional building with octomap
+if(ENABLE_RTABMAP_OCTOMAP)
+  IF(octomap_msgs_FOUND)		
+    SET(optional_dependencies ${optional_dependencies} octomap_msgs)		
+  ENDIF(octomap_msgs_FOUND)
+endif(ENABLE_RTABMAP_OCTOMAP)
 IF(rviz_FOUND)		
    SET(optional_dependencies ${optional_dependencies} rviz)		
 ENDIF(rviz_FOUND)
@@ -234,19 +243,21 @@ SET(rtabmap_plugins_lib_src
   )
 ENDIF(costmap_2d_FOUND)
 
-# If octomap is found, add definition
-IF(octomap_msgs_FOUND)
-MESSAGE(STATUS "WITH octomap_msgs")
-include_directories(
-  ${octomap_msgs_INCLUDE_DIRS}
-)
-SET(Libraries
-  ${octomap_msgs_LIBRARIES}
-  ${Libraries}
-)
-ADD_DEFINITIONS("-DWITH_OCTOMAP_MSGS")
-ENDIF(octomap_msgs_FOUND)
-
+## Optional building with octomap
+if(ENABLE_RTABMAP_OCTOMAP)
+  # If octomap is found, add definition
+  IF(octomap_msgs_FOUND)
+  MESSAGE(STATUS "WITH octomap_msgs")
+  include_directories(
+    ${octomap_msgs_INCLUDE_DIRS}
+  )
+  SET(Libraries
+    ${octomap_msgs_LIBRARIES}
+    ${Libraries}
+  )
+  ADD_DEFINITIONS("-DWITH_OCTOMAP_MSGS")
+  ENDIF(octomap_msgs_FOUND)
+endif(ENABLE_RTABMAP_OCTOMAP)
 # If apriltag_ros is found, add definition
 IF(apriltag_ros_FOUND)
 MESSAGE(STATUS "WITH apriltag_ros")
